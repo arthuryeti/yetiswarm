@@ -1,0 +1,31 @@
+# runtime/state
+runtime/state/
+runtime/state/**
+**/logs/
+**/*.db
+**/*.db-*
+**/.monitor.lock
+**/.progress-state.json
+**/memory/
+**/repos.local.json
+skill/yetiswarm/repos.json
+
+# local deps/build
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/*.pyc
+
+# env/secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.local
+*.pem
+*.key
+
+# macOS
+.DS_Store
