@@ -1,15 +1,52 @@
 # YetiSwarm
 
-YetiSwarm orchestrates coding-agent tasks across configured repositories.
+YetiSwarm is a TypeScript-only runtime for orchestrating coding-agent work across repos.
 
-## Portable Runtime Model
+## What YetiSwarm Is
 
-The skill package is shareable; runtime state is local:
+It runs task orchestration around coding agents: spawn an agent in a dedicated worktree, track task state in `swarm.db`, then drive CI/review handling and cleanup automatically.
 
-- Shareable: scripts, TypeScript source, docs, templates.
-- Local runtime: `repos.json`, `swarm.db`, `logs/`, monitor lock/progress files, `.env`.
+## What Problems It Solves
 
-## Setup
+- Keeps agent work isolated per task/branch.
+- Automates repetitive PR follow-up (CI failures and requested changes).
+- Preserves durable task state/events instead of ad-hoc shell tracking.
+- Prevents long-lived stale worktrees/branches after merge.
+
+## Core Capabilities
+
+- `run-agent`: create/reuse worktree, register task, launch agent process.
+- `monitor`: poll task/PR/CI/review state and trigger respawn/fix loops.
+- `cleanup`: remove finished task artifacts and merged leftovers.
+- `task-helper`: inspect and parse task/event/PR helper data.
+
+## End-to-End Lifecycle of a Task
+
+1. `run-agent` starts a task and writes task metadata to `swarm.db`.
+2. Agent commits/pushes and creates or updates a PR.
+3. `monitor` checks liveness, CI state, review state, and merge status.
+4. CI fail or dead/hung process triggers respawn with focused fix context.
+5. `CHANGES_REQUESTED` triggers review-feedback formatting and respawn.
+6. Passing CI + acceptable review state marks task ready/done.
+7. Merge triggers cleanup of worktree/branch and task records/events.
+
+## Shareable Skill Code vs Local Runtime State
+
+Shareable (commit these):
+
+- `src/` and `dist/` runtime code.
+- `package.json`, `tsconfig.json`, docs, and templates (`*.example`).
+
+Local runtime state (do not commit):
+
+- `repos.json`
+- `.env`
+- `swarm.db` and `swarm.db-*`
+- `logs/`
+- `.monitor.lock`
+- `.progress-state.json`
+
+## Setup (TypeScript Runtime)
 
 ```bash
 npm install
@@ -18,11 +55,11 @@ cp repos.example.json repos.json
 cp .env.example .env
 ```
 
-Edit `repos.json` with your local repository/worktree paths.
+Edit `repos.json` with real repo/worktree paths.
 
-## Runtime Env Vars
+## Runtime Environment Variables
 
-All entrypoints (`run-agent`, `monitor`, `cleanup`, `task-helper`) support:
+All entrypoints support:
 
 - `SWARM_HOME`
 - `SWARM_REPOS_FILE`
@@ -38,27 +75,31 @@ export SWARM_DB_PATH="$SWARM_HOME/swarm.db"
 export SWARM_LOGS_DIR="$SWARM_HOME/logs"
 ```
 
-Defaults and compatibility:
+If unset, runtime uses legacy auto-discovery.
 
-- If not set, the runtime auto-discovers legacy locations (CWD marker detection, then entrypoint-relative fallback).
-- Relative values are resolved from `SWARM_HOME` (or discovered runtime home).
+## Quick Practical Examples
 
-## Commands
+Spawn one agent task:
 
 ```bash
-npm run run-agent -- <repo-key> <task-id> <branch> <agent> <model> <thinking> "<prompt>"
-npm run monitor
-npm run cleanup
-npm run task-helper -- dump-tasks
+npm run run-agent -- engine feat-billing-invoice feat/billing-invoice codex gpt-5.3-codex high "Implement invoice export API and tests."
 ```
 
-## Runtime Files (Local Only)
+Run monitor loop once (for cron/scheduler use):
 
-- `repos.json`
-- `swarm.db` and `swarm.db-*`
-- `logs/`
-- `.monitor.lock`
-- `.progress-state.json`
-- `.env`
+```bash
+npm run monitor
+```
 
-These are intentionally gitignored.
+Inspect tasks/events:
+
+```bash
+npm run task-helper -- dump-tasks
+npm run task-helper -- dump-events 20
+```
+
+Cleanup merged/finished artifacts:
+
+```bash
+npm run cleanup
+```
