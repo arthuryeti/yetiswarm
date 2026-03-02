@@ -28,7 +28,7 @@ import {
 } from "./task-store.js";
 import { resolveRuntimePaths } from "./runtime-paths.js";
 
-type RepoTemplate = "nextjs" | "node-cli" | "python-cli" | "bare";
+type RepoTemplate = "nextjs" | "node-cli" | "bare";
 
 interface SpawnCliOptions {
   template: RepoTemplate;
@@ -317,20 +317,6 @@ function scaffoldNodeCli(repoDir: string, repoName: string): void {
   writeFileIfMissing(path.join(repoDir, ".gitignore"), "node_modules\ndist\n.env\n.DS_Store\n");
 }
 
-function scaffoldPythonCli(repoDir: string, repoName: string): void {
-  const moduleName = repoName.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "app";
-  writeFileIfMissing(
-    path.join(repoDir, "pyproject.toml"),
-    `[build-system]\nrequires = ["setuptools>=69.0"]\nbuild-backend = "setuptools.build_meta"\n\n[project]\nname = "${repoName}"\nversion = "0.1.0"\ndescription = "Python CLI scaffold"\nrequires-python = ">=3.11"\n\n[project.scripts]\n${moduleName} = "${moduleName}.__main__:main"\n`,
-  );
-  writeFileIfMissing(path.join(repoDir, `src/${moduleName}/__init__.py`), "");
-  writeFileIfMissing(
-    path.join(repoDir, `src/${moduleName}/__main__.py`),
-    "def main() -> None:\n    print(\"Python CLI scaffold ready.\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
-  );
-  writeFileIfMissing(path.join(repoDir, ".gitignore"), "__pycache__/\n*.pyc\n.venv/\n.env\n.DS_Store\n");
-}
-
 function scaffoldBare(repoDir: string, repoName: string): void {
   writeFileIfMissing(path.join(repoDir, "README.md"), `# ${repoName}\n\nInitial scaffold.\n`);
 }
@@ -342,9 +328,6 @@ function scaffoldRepoTemplate(repoDir: string, template: RepoTemplate, repoName:
       return;
     case "node-cli":
       scaffoldNodeCli(repoDir, repoName);
-      return;
-    case "python-cli":
-      scaffoldPythonCli(repoDir, repoName);
       return;
     case "bare":
     default:
@@ -378,12 +361,6 @@ function defaultTemplateOptions(template: RepoTemplate): { ciCmd: string; instal
         ciCmd: "npm run build",
         installCmd: "npm install --silent",
         techStack: "nodejs,typescript,cli",
-      };
-    case "python-cli":
-      return {
-        ciCmd: "python -m compileall src",
-        installCmd: "python -m pip install -e .",
-        techStack: "python,cli",
       };
     case "bare":
     default:
@@ -574,7 +551,7 @@ function parseCliOptions(extraArgs: string[]): SpawnCliOptions {
 
     switch (arg) {
       case "--template":
-        if (next && ["nextjs", "node-cli", "python-cli", "bare"].includes(next)) {
+        if (next && ["nextjs", "node-cli", "bare"].includes(next)) {
           options.template = next as RepoTemplate;
           i++;
         }
@@ -869,7 +846,7 @@ function main(): void {
       `Usage: ${process.argv[1]} <repo-key> <task-id> <branch> <agent> <model> <thinking> \"<prompt>\"`,
     );
     console.log(
-      "Optional flags: --template <nextjs|node-cli|python-cli|bare> --description <text> --tech-stack <csv> --visibility <private|public> --github-owner <owner> --site-root <path> --notify-channel <channel> --notify-target <target> --notify-reply-to <message-id>",
+      "Optional flags: --template <nextjs|node-cli|bare> --description <text> --tech-stack <csv> --visibility <private|public> --github-owner <owner> --site-root <path> --notify-channel <channel> --notify-target <target> --notify-reply-to <message-id>",
     );
     console.log(`Repos: ${keys}`);
     process.exit(1);

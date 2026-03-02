@@ -6,7 +6,7 @@ YetiSwarm orchestrates coding-agent tasks across configured repositories.
 
 The skill package is shareable; runtime state is local:
 
-- Shareable: scripts, TypeScript/Python source, docs, templates.
+- Shareable: scripts, TypeScript source, docs, templates.
 - Local runtime: `repos.json`, `swarm.db`, `logs/`, monitor lock/progress files, `.env`.
 
 ## Setup

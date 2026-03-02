@@ -18,8 +18,6 @@ if command -v rsync >/dev/null 2>&1; then
     --exclude '.DS_Store' \
     --exclude 'node_modules/' \
     --exclude 'dist/' \
-    --exclude '__pycache__/' \
-    --exclude '*.pyc' \
     --exclude 'logs/' \
     --exclude '*.db' \
     --exclude '*.db-*' \

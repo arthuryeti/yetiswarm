@@ -4,13 +4,13 @@ Portable YetiSwarm packaging with a clean split between shareable skill code and
 
 ## Layout
 
-- `skill/yetiswarm/`: distributable skill code, TypeScript sources, Python entrypoints, docs, templates.
+- `skill/yetiswarm/`: distributable skill code, TypeScript sources, docs, templates.
 - `runtime/example-state/`: example runtime layout only (no real secrets/state).
 - `scripts/install.sh`: installs `skill/yetiswarm` to `${OPENCLAW_SKILLS_DIR:-~/.agents/skills}/yetiswarm`.
 
 ## Runtime Path Environment Variables
 
-All TS and Python entrypoints support these variables:
+All runtime entrypoints support these variables:
 
 - `SWARM_HOME`: base runtime directory.
 - `SWARM_REPOS_FILE`: path to runtime `repos.json`.

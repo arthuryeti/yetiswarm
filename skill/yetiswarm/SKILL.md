@@ -33,6 +33,8 @@ cp .env.example .env
 
 ## Build
 
+This runtime is TypeScript-only and compiles to `dist/*.js`.
+
 ```bash
 npm install
 npm run build
