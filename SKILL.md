@@ -31,6 +31,8 @@ After install, the skill package is intentionally flat:
 - `scripts/runtime/*.js` (runtime engine)
 - `scripts/templates/*` (scaffold files)
 
+This repository also includes `skill/yetiswarm/` only as a legacy build shim. Canonical skill docs are at repo-root `SKILL.md`.
+
 ## Runtime Configuration
 
 These env vars are supported:

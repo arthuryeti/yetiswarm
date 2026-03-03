@@ -69,3 +69,4 @@ This repository keeps:
 - `scripts/` for installer + executable runtime helpers + templates
 - `runtime/src/` for TypeScript runtime source used for maintenance
 - `runtime/example-state/` as layout documentation
+- `skill/yetiswarm/` as a minimal backward-compatibility shim for legacy `npm --prefix skill/yetiswarm ...` commands

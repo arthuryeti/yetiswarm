@@ -1,0 +1,9 @@
+{
+  "name": "yetiswarm-compat",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "npm --prefix ../../runtime run build",
+    "check": "npm --prefix ../../runtime run check"
+  }
+}
