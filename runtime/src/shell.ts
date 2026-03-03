@@ -94,8 +94,12 @@ export function tmuxNewSession(session: string, cwd: string): void {
   _run(["tmux", "new-session", "-d", "-s", session, "-c", cwd]);
 }
 
+function quoteSingleForShell(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
 export function tmuxPipePane(session: string, logFile: string): void {
-  _run(["tmux", "pipe-pane", "-t", session, `cat >> '${logFile}'`]);
+  _run(["tmux", "pipe-pane", "-t", session, `cat >> ${quoteSingleForShell(logFile)}`]);
 }
 
 export function tmuxSendKeys(session: string, cmd: string): void {
@@ -214,18 +218,47 @@ export function runInstall(cwd: string, installCmd: string): RunResult {
   }
 }
 
-export function processSpawn(cmd: string, cwd: string, logFile: string, env?: Record<string, string>): number {
-  const mergedEnv = { ...process.env, ...(env ?? {}) };
-  const fd = fs.openSync(logFile, "a");
-  const child = spawn("/bin/sh", ["-lc", cmd], {
-    cwd,
-    detached: true,
-    stdio: ["ignore", fd, fd],
-    env: mergedEnv,
-  });
-  child.unref();
-  fs.closeSync(fd);
-  return child.pid ?? 0;
+export function processSpawn(
+  command: string,
+  args: string[],
+  cwd: string,
+  logFile: string,
+  options?: { env?: Record<string, string>; stdinFile?: string },
+): number {
+  const mergedEnv = { ...process.env, ...(options?.env ?? {}) };
+  const outFd = fs.openSync(logFile, "a");
+  let inFd: number | undefined;
+
+  try {
+    if (options?.stdinFile) {
+      inFd = fs.openSync(options.stdinFile, "r");
+    }
+
+    const child = spawn(command, args, {
+      cwd,
+      detached: true,
+      stdio: [inFd ?? "ignore", outFd, outFd],
+      env: mergedEnv,
+    });
+    child.once("error", (err) => {
+      try {
+        fs.appendFileSync(logFile, `\n[spawn-error] ${String(err)}\n`, "utf8");
+      } catch {
+        // noop
+      }
+    });
+    const pid = child.pid ?? 0;
+    child.unref();
+    if (!Number.isInteger(pid) || pid <= 0) {
+      throw new Error(`Failed to spawn '${command}'. Check that it is installed and available in PATH.`);
+    }
+    return pid;
+  } finally {
+    if (inFd !== undefined) {
+      fs.closeSync(inFd);
+    }
+    fs.closeSync(outFd);
+  }
 }
 
 export function processIsAlive(pid: number): boolean {

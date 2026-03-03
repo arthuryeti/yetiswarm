@@ -8,7 +8,7 @@ runtime/state/**
 **/.progress-state.json
 **/memory/
 **/repos.local.json
-skill/yetiswarm/repos.json
+repos.json
 
 # local deps/build
 **/node_modules/

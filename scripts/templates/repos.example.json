@@ -1,0 +1,126 @@
+{
+  "repos": {
+    "app": {
+      "name": "app",
+      "path": "/absolute/path/to/repos/app",
+      "ghRepo": "your-org/app",
+      "githubUrl": "https://github.com/your-org/app",
+      "description": "Primary application repository",
+      "techStack": "nodejs,typescript",
+      "worktrees": "/absolute/path/to/worktrees/app",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "dashboard": {
+      "name": "dashboard",
+      "path": "/absolute/path/to/repos/dashboard",
+      "ghRepo": "your-org/dashboard",
+      "githubUrl": "https://github.com/your-org/dashboard",
+      "description": "Dashboard application repository",
+      "techStack": "nextjs,react,typescript",
+      "worktrees": "/absolute/path/to/worktrees/dashboard",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "engine": {
+      "name": "engine",
+      "path": "/absolute/path/to/repos/engine",
+      "ghRepo": "your-org/engine",
+      "githubUrl": "https://github.com/your-org/engine",
+      "description": "Backend/core workflow repository",
+      "techStack": "nodejs,typescript,trpc,bullmq,drizzle",
+      "worktrees": "/absolute/path/to/worktrees/engine",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": [],
+      "dockerCompose": true,
+      "promptPreamble": "NOTE: Local Docker services may be required for tests."
+    },
+    "higgcli": {
+      "name": "higgcli",
+      "path": "/absolute/path/to/repos/higgcli",
+      "ghRepo": "your-org/higgcli",
+      "githubUrl": "https://github.com/your-org/higgcli",
+      "description": "CLI repository",
+      "techStack": "nodejs,typescript,cli",
+      "worktrees": "/absolute/path/to/worktrees/higgcli",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "higgsfieldcli": {
+      "name": "higgsfieldcli",
+      "path": "/absolute/path/to/repos/higgsfieldcli",
+      "ghRepo": "your-org/higgsfieldcli",
+      "githubUrl": "https://github.com/your-org/higgsfieldcli",
+      "description": "CLI repository",
+      "techStack": "nodejs,typescript,cli",
+      "worktrees": "/absolute/path/to/worktrees/higgsfieldcli",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "metacli": {
+      "name": "metacli",
+      "path": "/absolute/path/to/repos/metacli",
+      "ghRepo": "your-org/metacli",
+      "githubUrl": "https://github.com/your-org/metacli",
+      "description": "CLI repository",
+      "techStack": "nodejs,typescript,cli",
+      "worktrees": "/absolute/path/to/worktrees/metacli",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "shopifycli": {
+      "name": "shopifycli",
+      "path": "/absolute/path/to/repos/shopifycli",
+      "ghRepo": "your-org/shopifycli",
+      "githubUrl": "https://github.com/your-org/shopifycli",
+      "description": "CLI repository",
+      "techStack": "nodejs,typescript,cli",
+      "worktrees": "/absolute/path/to/worktrees/shopifycli",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "socli": {
+      "name": "socli",
+      "path": "/absolute/path/to/repos/socli",
+      "ghRepo": "your-org/socli",
+      "githubUrl": "https://github.com/your-org/socli",
+      "description": "Social automation CLI repository",
+      "techStack": "nodejs,typescript,cli",
+      "worktrees": "/absolute/path/to/worktrees/socli",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "viraldna": {
+      "name": "viraldna",
+      "path": "/absolute/path/to/repos/viraldna",
+      "ghRepo": "your-org/viraldna",
+      "githubUrl": "https://github.com/your-org/viraldna",
+      "description": "Trend research and content intelligence platform",
+      "techStack": "nextjs,react,typescript,drizzle",
+      "worktrees": "/absolute/path/to/worktrees/viraldna",
+      "ciCmd": "npm run typecheck",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    },
+    "aria": {
+      "name": "aria",
+      "path": "/absolute/path/to/repos/aria",
+      "ghRepo": "your-org/aria",
+      "githubUrl": "https://github.com/your-org/aria",
+      "description": "Monorepo containing multiple apps",
+      "techStack": "nodejs,typescript,monorepo",
+      "worktrees": "/absolute/path/to/worktrees/aria",
+      "ciCmd": "npm run build",
+      "installCmd": "npm install --silent",
+      "contextFiles": []
+    }
+  }
+}

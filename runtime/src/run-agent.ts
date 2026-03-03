@@ -189,6 +189,13 @@ function runOrThrow(cmd: string[], cwd?: string, timeout = 120): string {
   return result.stdout.trim();
 }
 
+function ensureCodexAvailable(): void {
+  const check = _run(["/bin/sh", "-lc", "command -v codex >/dev/null 2>&1"]);
+  if (check.returncode !== 0) {
+    throw new Error("codex CLI was not found in PATH. Install codex and retry.");
+  }
+}
+
 function hasGitRepo(dir: string): boolean {
   return fs.existsSync(path.join(dir, ".git"));
 }
@@ -797,14 +804,27 @@ export function spawnAgent(args: SpawnAgentArgs): void {
     const promptFile = path.join(worktreePath, ".agent-prompt.txt");
     fs.writeFileSync(promptFile, fullPrompt, "utf8");
 
-    const agentCmd =
-      `codex exec --model \"${model}\" ` +
-      `-c \"model_reasoning_effort=${thinking}\" ` +
-      `--dangerously-bypass-approvals-and-sandbox - < \"${promptFile}\"`;
-
     fs.mkdirSync(logsDir, { recursive: true });
     console.log(`Spawning ${agent} agent as background process...`);
-    pid = processSpawn(agentCmd, worktreePath, logFile);
+    ensureCodexAvailable();
+    pid = processSpawn(
+      "codex",
+      [
+        "exec",
+        "--model",
+        model,
+        "-c",
+        `model_reasoning_effort=${thinking}`,
+        "--dangerously-bypass-approvals-and-sandbox",
+        "-",
+      ],
+      worktreePath,
+      logFile,
+      { stdinFile: promptFile },
+    );
+    if (!Number.isInteger(pid) || pid <= 0) {
+      throw new Error("Failed to launch codex agent: invalid PID returned from process spawn.");
+    }
 
     store.patchTask(taskId, { pid });
 

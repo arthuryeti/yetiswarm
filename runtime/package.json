@@ -1,0 +1,21 @@
+{
+  "name": "yetiswarm-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "run-agent": "node --no-warnings=ExperimentalWarning dist/run-agent.js",
+    "monitor": "node --no-warnings=ExperimentalWarning dist/monitor.js",
+    "cleanup": "node --no-warnings=ExperimentalWarning dist/cleanup.js",
+    "task-helper": "node --no-warnings=ExperimentalWarning dist/task-helper.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

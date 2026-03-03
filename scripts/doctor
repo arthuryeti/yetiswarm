@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/swarm-common.sh
+. "$SCRIPT_DIR/lib/swarm-common.sh"
+
+show_help() {
+  cat <<'USAGE'
+Usage: ./scripts/doctor [--fix]
+
+Checks local yetiswarm runtime setup.
+
+Options:
+  --fix     Create missing local runtime files and folders.
+  -h, --help  Show this help text.
+USAGE
+}
+
+fix_mode=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --fix)
+      fix_mode=1
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      show_help >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+swarm_bootstrap
+
+echo "(=^.^=) yetiswarm doctor"
+echo "Skill root: $swarm_skill_root"
+echo "SWARM_HOME: $SWARM_HOME"
+echo "SWARM_REPOS_FILE: $SWARM_REPOS_FILE"
+echo "SWARM_DB_PATH: $SWARM_DB_PATH"
+echo "SWARM_LOGS_DIR: $SWARM_LOGS_DIR"
+
+issues=0
+warnings=0
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "[fail] node is not installed."
+  issues=$((issues + 1))
+else
+  node_major="$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)"
+  case "$node_major" in
+    ''|*[!0-9]*)
+      node_major=0
+      ;;
+  esac
+  if [ "$node_major" -lt 22 ]; then
+    echo "[fail] node >= 22 is required (found: $(node -v 2>/dev/null || echo unknown))."
+    issues=$((issues + 1))
+  else
+    echo "[ok] node version: $(node -v)"
+  fi
+fi
+
+if command -v git >/dev/null 2>&1; then
+  echo "[ok] git found"
+else
+  echo "[fail] git is required"
+  issues=$((issues + 1))
+fi
+
+if command -v gh >/dev/null 2>&1; then
+  echo "[ok] gh found"
+else
+  echo "[warn] gh not found; PR/CI automation will be limited"
+  warnings=$((warnings + 1))
+fi
+
+if command -v tmux >/dev/null 2>&1; then
+  echo "[ok] tmux found"
+else
+  echo "[warn] tmux not found; some workflows may rely on detached sessions"
+  warnings=$((warnings + 1))
+fi
+
+missing_runtime_files=0
+if [ ! -f "$SWARM_REPOS_FILE" ]; then
+  echo "[warn] repos file missing: $SWARM_REPOS_FILE"
+  missing_runtime_files=1
+fi
+if [ ! -f "$SWARM_HOME/.env" ]; then
+  echo "[warn] env file missing: $SWARM_HOME/.env"
+  missing_runtime_files=1
+fi
+
+if [ "$fix_mode" -eq 1 ]; then
+  if ! mkdir -p "$SWARM_HOME" "$SWARM_LOGS_DIR"; then
+    echo "[fail] unable to create runtime directories under: $SWARM_HOME"
+    issues=$((issues + 1))
+  fi
+
+  if [ ! -f "$SWARM_REPOS_FILE" ] && [ -f "$SCRIPT_DIR/templates/repos.example.json" ]; then
+    if cp "$SCRIPT_DIR/templates/repos.example.json" "$SWARM_REPOS_FILE"; then
+      echo "[fix] created repos file from template"
+    else
+      echo "[fail] unable to create repos file: $SWARM_REPOS_FILE"
+      issues=$((issues + 1))
+    fi
+  fi
+
+  if [ ! -f "$SWARM_HOME/.env" ] && [ -f "$SCRIPT_DIR/templates/.env.example" ]; then
+    if cp "$SCRIPT_DIR/templates/.env.example" "$SWARM_HOME/.env"; then
+      echo "[fix] created .env from template"
+    else
+      echo "[fail] unable to create env file: $SWARM_HOME/.env"
+      issues=$((issues + 1))
+    fi
+  fi
+fi
+
+if [ ! -f "$SWARM_REPOS_FILE" ]; then
+  issues=$((issues + 1))
+fi
+if [ ! -f "$SWARM_HOME/.env" ]; then
+  issues=$((issues + 1))
+fi
+
+if [ "$issues" -gt 0 ]; then
+  echo "Doctor result: $issues issue(s), $warnings warning(s)."
+  if [ "$missing_runtime_files" -eq 1 ] && [ "$fix_mode" -eq 0 ]; then
+    echo "Run './scripts/doctor --fix' to scaffold missing local files."
+  fi
+  exit 1
+fi
+
+echo "Doctor result: healthy ($warnings warning(s))."
