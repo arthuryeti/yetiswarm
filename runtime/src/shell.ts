@@ -240,8 +240,19 @@ export function processSpawn(
       stdio: [inFd ?? "ignore", outFd, outFd],
       env: mergedEnv,
     });
+    child.once("error", (err) => {
+      try {
+        fs.appendFileSync(logFile, `\n[spawn-error] ${String(err)}\n`, "utf8");
+      } catch {
+        // noop
+      }
+    });
+    const pid = child.pid ?? 0;
     child.unref();
-    return child.pid ?? 0;
+    if (!Number.isInteger(pid) || pid <= 0) {
+      throw new Error(`Failed to spawn '${command}'. Check that it is installed and available in PATH.`);
+    }
+    return pid;
   } finally {
     if (inFd !== undefined) {
       fs.closeSync(inFd);

@@ -137,6 +137,12 @@ function runOrThrow(cmd, cwd, timeout = 120) {
     }
     return result.stdout.trim();
 }
+function ensureCodexAvailable() {
+    const check = _run(["/bin/sh", "-lc", "command -v codex >/dev/null 2>&1"]);
+    if (check.returncode !== 0) {
+        throw new Error("codex CLI was not found in PATH. Install codex and retry.");
+    }
+}
 function hasGitRepo(dir) {
     return fs.existsSync(path.join(dir, ".git"));
 }
@@ -600,6 +606,7 @@ export function spawnAgent(args) {
         fs.writeFileSync(promptFile, fullPrompt, "utf8");
         fs.mkdirSync(logsDir, { recursive: true });
         console.log(`Spawning ${agent} agent as background process...`);
+        ensureCodexAvailable();
         pid = processSpawn("codex", [
             "exec",
             "--model",
@@ -609,6 +616,9 @@ export function spawnAgent(args) {
             "--dangerously-bypass-approvals-and-sandbox",
             "-",
         ], worktreePath, logFile, { stdinFile: promptFile });
+        if (!Number.isInteger(pid) || pid <= 0) {
+            throw new Error("Failed to launch codex agent: invalid PID returned from process spawn.");
+        }
         store.patchTask(taskId, { pid });
         sleepSync(1000);
         if (!processIsAlive(pid)) {
