@@ -76,8 +76,11 @@ export function tmuxKillSession(session) {
 export function tmuxNewSession(session, cwd) {
     _run(["tmux", "new-session", "-d", "-s", session, "-c", cwd]);
 }
+function quoteSingleForShell(value) {
+    return `'${value.replace(/'/g, `'\\''`)}'`;
+}
 export function tmuxPipePane(session, logFile) {
-    _run(["tmux", "pipe-pane", "-t", session, `cat >> '${logFile}'`]);
+    _run(["tmux", "pipe-pane", "-t", session, `cat >> ${quoteSingleForShell(logFile)}`]);
 }
 export function tmuxSendKeys(session, cmd) {
     _run(["tmux", "send-keys", "-t", session, cmd, "Enter"]);
@@ -179,18 +182,29 @@ export function runInstall(cwd, installCmd) {
         return { returncode: 1, stdout: "", stderr: String(err) };
     }
 }
-export function processSpawn(cmd, cwd, logFile, env) {
-    const mergedEnv = { ...process.env, ...(env ?? {}) };
-    const fd = fs.openSync(logFile, "a");
-    const child = spawn("/bin/sh", ["-lc", cmd], {
-        cwd,
-        detached: true,
-        stdio: ["ignore", fd, fd],
-        env: mergedEnv,
-    });
-    child.unref();
-    fs.closeSync(fd);
-    return child.pid ?? 0;
+export function processSpawn(command, args, cwd, logFile, options) {
+    const mergedEnv = { ...process.env, ...(options?.env ?? {}) };
+    const outFd = fs.openSync(logFile, "a");
+    let inFd;
+    try {
+        if (options?.stdinFile) {
+            inFd = fs.openSync(options.stdinFile, "r");
+        }
+        const child = spawn(command, args, {
+            cwd,
+            detached: true,
+            stdio: [inFd ?? "ignore", outFd, outFd],
+            env: mergedEnv,
+        });
+        child.unref();
+        return child.pid ?? 0;
+    }
+    finally {
+        if (inFd !== undefined) {
+            fs.closeSync(inFd);
+        }
+        fs.closeSync(outFd);
+    }
 }
 export function processIsAlive(pid) {
     try {

@@ -30,10 +30,6 @@ function hasSwarmMarkers(dir) {
         fs.existsSync(path.join(dir, "swarm.db")));
 }
 function resolveLegacySwarmDir(entryFile) {
-    const cwd = process.cwd();
-    if (hasSwarmMarkers(cwd)) {
-        return cwd;
-    }
     const dir = path.dirname(path.resolve(entryFile));
     if (hasSwarmMarkers(dir)) {
         return dir;

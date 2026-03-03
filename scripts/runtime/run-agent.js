@@ -598,12 +598,17 @@ export function spawnAgent(args) {
         }
         const promptFile = path.join(worktreePath, ".agent-prompt.txt");
         fs.writeFileSync(promptFile, fullPrompt, "utf8");
-        const agentCmd = `codex exec --model \"${model}\" ` +
-            `-c \"model_reasoning_effort=${thinking}\" ` +
-            `--dangerously-bypass-approvals-and-sandbox - < \"${promptFile}\"`;
         fs.mkdirSync(logsDir, { recursive: true });
         console.log(`Spawning ${agent} agent as background process...`);
-        pid = processSpawn(agentCmd, worktreePath, logFile);
+        pid = processSpawn("codex", [
+            "exec",
+            "--model",
+            model,
+            "-c",
+            `model_reasoning_effort=${thinking}`,
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-",
+        ], worktreePath, logFile, { stdinFile: promptFile });
         store.patchTask(taskId, { pid });
         sleepSync(1000);
         if (!processIsAlive(pid)) {

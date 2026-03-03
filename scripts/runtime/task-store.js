@@ -68,6 +68,7 @@ const TASK_COLUMNS = [
     "pid",
     "container_id",
 ];
+const TASK_COLUMN_SET = new Set(TASK_COLUMNS);
 function parseJson(text, fallback) {
     try {
         return JSON.parse(text);
@@ -318,7 +319,10 @@ export class TaskStore {
             }
             const updates = {};
             for (const [incomingKey, valueRaw] of Object.entries(patchCopy)) {
-                const snakeKey = KEY_MAP[incomingKey] || incomingKey;
+                const snakeKey = (KEY_MAP[incomingKey] ?? incomingKey).trim();
+                if (!TASK_COLUMN_SET.has(snakeKey)) {
+                    continue;
+                }
                 let value = valueRaw;
                 if (snakeKey === "notify_on_complete") {
                     value = value ? 1 : 0;
@@ -400,7 +404,10 @@ export class TaskStore {
             }
             const row = {};
             for (const [camelKey, valueRaw] of Object.entries(taskData)) {
-                const snakeKey = KEY_MAP[camelKey] || camelKey;
+                const snakeKey = (KEY_MAP[camelKey] ?? camelKey).trim();
+                if (!TASK_COLUMN_SET.has(snakeKey)) {
+                    continue;
+                }
                 let value = valueRaw;
                 if (snakeKey === "checks") {
                     if (typeof value === "object" && value !== null) {

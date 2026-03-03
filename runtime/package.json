@@ -11,6 +11,9 @@
     "cleanup": "node --no-warnings=ExperimentalWarning dist/cleanup.js",
     "task-helper": "node --no-warnings=ExperimentalWarning dist/task-helper.js"
   },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "devDependencies": {
     "@types/node": "^22.13.10",
     "typescript": "^5.8.2"

@@ -110,6 +110,8 @@ const TASK_COLUMNS: Array<keyof Task> = [
   "container_id",
 ];
 
+const TASK_COLUMN_SET = new Set<string>(TASK_COLUMNS as string[]);
+
 function parseJson<T>(text: string, fallback: T): T {
   try {
     return JSON.parse(text) as T;
@@ -398,7 +400,11 @@ export class TaskStore {
 
       const updates: Record<string, unknown> = {};
       for (const [incomingKey, valueRaw] of Object.entries(patchCopy)) {
-        const snakeKey = (KEY_MAP[incomingKey] as string) || incomingKey;
+        const snakeKey = ((KEY_MAP[incomingKey] as string | undefined) ?? incomingKey).trim();
+        if (!TASK_COLUMN_SET.has(snakeKey)) {
+          continue;
+        }
+
         let value = valueRaw;
 
         if (snakeKey === "notify_on_complete") {
@@ -487,7 +493,11 @@ export class TaskStore {
 
       const row: Record<string, unknown> = {};
       for (const [camelKey, valueRaw] of Object.entries(taskData)) {
-        const snakeKey = (KEY_MAP[camelKey] as string) || camelKey;
+        const snakeKey = ((KEY_MAP[camelKey] as string | undefined) ?? camelKey).trim();
+        if (!TASK_COLUMN_SET.has(snakeKey)) {
+          continue;
+        }
+
         let value = valueRaw;
 
         if (snakeKey === "checks") {
